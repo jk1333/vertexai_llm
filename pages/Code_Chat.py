@@ -29,6 +29,8 @@ chat = StartCodeChat()
 st.title("⚙️💬 CodeChatbot")
 if st.button("♻️"):
     del st.session_state[SESSION_KEY]
+    st.cache_resource.clear()
+    chat = StartCodeChat()
 
 if SESSION_KEY not in st.session_state:
     st.session_state[SESSION_KEY] = [{"role": "assistant", "icon": BOT_ICON, "content": "How can I help you?"}]

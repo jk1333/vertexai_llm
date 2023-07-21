@@ -23,14 +23,16 @@ with st.sidebar:
 @st.cache_resource
 def StartTextChat():
     vertexai.init()
-    chat_model = ChatModel.from_pretrained("chat-bison")
-    return chat_model.start_chat()
+    model = ChatModel.from_pretrained("chat-bison")
+    return model.start_chat()
 
 chat = StartTextChat()
 
 st.title("📝💬 Chatbot")
 if st.button("♻️"):
     del st.session_state[SESSION_KEY]
+    st.cache_resource.clear()
+    chat = StartTextChat()
 
 if SESSION_KEY not in st.session_state:
     st.session_state[SESSION_KEY] = [{"role": "assistant", "icon": BOT_ICON, "content": "How can I help you?"}]
