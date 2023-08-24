@@ -1,7 +1,7 @@
 # Vertex AI LLM tester
 
 ## Brief
-In this sample, you'll learn how to create LLM dashboard using Google Cloud LLM, Image API and streamlit
+In this sample, you'll learn how to create LLM dashboard using Google Cloud LLM, Imagen API and streamlit
 
 ## Steps for setting
 ```
