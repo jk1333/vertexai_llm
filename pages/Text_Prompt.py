@@ -34,8 +34,10 @@ if SESSION_KEY not in st.session_state:
     st.session_state[SESSION_KEY] = {"request": "", "response": None}
     st.session_state[HISTORY_KEY] = []
 
-request = st.text_area("Enter Task:", st.session_state[SESSION_KEY]["request"])
-st.session_state[SESSION_KEY]["request"] = request
+def textChange():
+    st.session_state[SESSION_KEY]["request"] = st.session_state.input
+st.text_area("Enter Task:", st.session_state[SESSION_KEY]["request"], key='input', on_change=textChange)
+request = st.session_state[SESSION_KEY]["request"]
 response = st.session_state[SESSION_KEY]["response"]
 
 if st.button("Execute"):
