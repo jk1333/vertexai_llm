@@ -3,7 +3,7 @@ import vertexai
 from google.cloud.aiplatform.models import Endpoint
 import sys
 from google.cloud import bigquery
-import pandas as pd
+from streamlit_ace import st_ace
 
 SESSION_KEY = "text2sqlprompt"
 HISTORY_KEY = "text2sqlprompt_hs"
@@ -52,7 +52,7 @@ def predict(nlquery, dataset, tables_filter = None, columns_filter = None):
         "temperature": 0.8,
         "nb_samples": 5,
     }
-    return prompt.predict(instances=example_input, parameters=params).predictions[0]['sql_query'].replace("\n", " ")
+    return prompt.predict(instances=example_input, parameters=params).predictions[0]['sql_query']
 
 st.title("📝 Text2SQL prompt")
 if st.button("♻️"):
@@ -71,8 +71,8 @@ if st.button("Execute"):
         response = predict(request, dataset)
 
 if response != None:
-    response = st.text_area("SQL Editor", response, height=150)
-    if st.button("Query") or (st.session_state[SESSION_KEY]["response"] != response):
+    response = st_ace(value=response, language="sql", theme="clouds", wrap=True)
+    if st.session_state[SESSION_KEY]["response"] != response:
         df = None
         with st.spinner("Executing bigquery..."):
             try:
