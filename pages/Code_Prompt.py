@@ -1,6 +1,7 @@
 import streamlit as st
+from google.cloud import aiplatform
 import vertexai
-from vertexai.language_models import CodeGenerationModel
+from vertexai.preview.language_models import CodeGenerationModel
 
 SESSION_KEY = "codeprompt"
 HISTORY_KEY = "codeprompt_hs"
@@ -11,22 +12,36 @@ st.set_page_config(
     initial_sidebar_state="auto"
 )
 
+BASE_MODELS = ["code-bison@001"]
+
+@st.cache_resource
+def StartCodeModels(basemodel_name):
+    vertexai.init()
+    basemodel = CodeGenerationModel.from_pretrained(basemodel_name)
+    models = {}
+    models[basemodel_name] = basemodel
+    for tuned_model in basemodel.list_tuned_model_names():
+        registry = aiplatform.Model(tuned_model)
+        models[registry.display_name] = CodeGenerationModel.get_tuned_model(tuned_model)
+    return models
+
+with st.sidebar:
+    basemodel_name = st.selectbox("Base Models", BASE_MODELS)
+
+models = StartCodeModels(basemodel_name)
 parameters = {}
 with st.sidebar:
+    selected_model = st.selectbox("Tuned Models", models.keys())
+    prompt = models[selected_model]
     expander = st.expander("Parameters")
     parameters['temperature'] = expander.slider("temperature", 0.0, 1.0, 0.2)
     parameters['max_output_tokens'] = expander.slider("Max output tokens", 1, 2048, 1024)
 
-@st.cache_resource
-def StartCodePrompt():
-    vertexai.init()
-    return CodeGenerationModel.from_pretrained("code-bison")
-
-prompt = StartCodePrompt()
-
 st.title("⚙️ Code prompt")
 if st.button("♻️"):
     del st.session_state[SESSION_KEY]
+    st.cache_resource.clear()
+    st.experimental_rerun()
 
 if SESSION_KEY not in st.session_state:
     st.session_state[SESSION_KEY] = {"request": "", "response": None}

@@ -84,7 +84,7 @@ if response != None:
         st.session_state[SESSION_KEY]["response"] = response
         st.session_state[SESSION_KEY]["dataframe"] = df
         st.session_state[HISTORY_KEY].append({"request": request, "response": response, "dataframe": df})
-    st.dataframe(st.session_state[SESSION_KEY]["dataframe"])
+    st.dataframe(st.session_state[SESSION_KEY]["dataframe"], use_container_width=True)
 
 with st.sidebar:
     expander = st.expander("History")

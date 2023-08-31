@@ -1,6 +1,7 @@
 import streamlit as st
+from google.cloud import aiplatform
 import vertexai
-from vertexai.language_models import TextGenerationModel
+from vertexai.preview.language_models import TextGenerationModel
 
 SESSION_KEY = "textprompt"
 HISTORY_KEY = "textprompt_hs"
@@ -11,20 +12,32 @@ st.set_page_config(
     initial_sidebar_state="auto"
 )
 
+BASE_MODELS = ["text-bison@001"]
+
+@st.cache_resource
+def StartTextModels(basemodel_name):
+    vertexai.init()
+    basemodel = TextGenerationModel.from_pretrained(basemodel_name)
+    models = {}
+    models[basemodel_name] = basemodel
+    for tuned_model in basemodel.list_tuned_model_names():
+        registry = aiplatform.Model(tuned_model)
+        models[registry.display_name] = TextGenerationModel.get_tuned_model(tuned_model)
+    return models
+
+with st.sidebar:
+    basemodel_name = st.selectbox("Base Models", BASE_MODELS)
+
+models = StartTextModels(basemodel_name)
 parameters = {}
 with st.sidebar:
+    selected_model = st.selectbox("Tuned Models", models.keys())
+    prompt = models[selected_model]
     expander = st.expander("Parameters")
     parameters['temperature'] = expander.slider("Temperature", 0.0, 1.0, 0.2)
     parameters['max_output_tokens'] = expander.slider("Max output tokens", 1, 1024, 256)
     parameters['top_k'] = expander.slider("Top K", 1, 40, 40)
     parameters['top_p'] = expander.slider("Top P", 0.0, 1.0, 0.8)
-
-@st.cache_resource
-def StartTextPrompt():
-    vertexai.init()
-    return TextGenerationModel.from_pretrained("text-bison")
-
-prompt = StartTextPrompt()
 
 st.title("📝 Text prompt")
 if st.button("♻️"):
